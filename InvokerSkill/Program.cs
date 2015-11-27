@@ -7,6 +7,7 @@ using Ensage.Common;
 using Ensage.Common.Extensions;
 using SharpDX;
 using SharpDX.Direct3D9;
+using Ensage.Common.Menu;
 
 namespace InvokerSkill
 {
@@ -27,6 +28,7 @@ namespace InvokerSkill
         public static double startposx = HUDInfo.ScreenSizeX() * 0.340104167, startposy = HUDInfo.ScreenSizeY() * 0.75;
         public static float size = (float)Math.Sqrt(2500 * (HUDInfo.ScreenSizeX() * HUDInfo.ScreenSizeY() / 2073600));
         public static Vector2 vector_size = new Vector2(size, size);
+        private static readonly Menu Menu = new Menu("Invoker Skill", "invokerskill",true);
         #endregion
 
         #region ChangeKeyOrSkill
@@ -44,6 +46,9 @@ namespace InvokerSkill
 
         private static void Main()
         {
+            MenuItem quickcastoption = new MenuItem("quickcast", "Quick Cast").SetValue(false);
+            Menu.AddItem(quickcastoption);
+            Menu.AddToMainMenu();
             FontArray = new Font(
                     Drawing.Direct3DDevice9,
                     new FontDescription
@@ -187,8 +192,9 @@ namespace InvokerSkill
                 {
                     spell[startspell].UseAbility();
                     if (Utils.SleepCheck("spell1sleep"))
-                    {
-                        Game.ExecuteCommand("dota_ability_execute 3");
+                    {   if(!Menu.Item("quickcast").GetValue<bool>())
+                            Game.ExecuteCommand("dota_ability_execute 3");
+                        else Game.ExecuteCommand("dota_ability_quickcast 3");
                         Utils.Sleep(150, "spell1sleep");
                     }
 
@@ -198,7 +204,9 @@ namespace InvokerSkill
                     spell[startspell].UseAbility();
                     if (Utils.SleepCheck("spell2sleep"))
                     {
-                        Game.ExecuteCommand("dota_ability_execute 4");
+                        if(!Menu.Item("quickcast").GetValue<bool>())
+                            Game.ExecuteCommand("dota_ability_execute 4");
+                        else Game.ExecuteCommand("dota_ability_quickcast 4");
                         Utils.Sleep(150, "spell2sleep");
                     }
                 }
