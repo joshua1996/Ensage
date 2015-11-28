@@ -174,6 +174,7 @@ namespace InvokerSkill
                     SpellInfo.Add(emp.Name, new SpellStruct(w, w, w));
                     SpellInfo.Add(alacrity.Name, new SpellStruct(w, w, e));
                     SpellInfo.Add(chaosmeteor.Name, new SpellStruct(e, e, w));
+                     #region Changeskill
                     spell[1] = tornado;
                     spell[2] = chaosmeteor;
                     spell[3] = emp;
@@ -184,6 +185,7 @@ namespace InvokerSkill
                     spell[8] = icewall;
                     spell[9] = alacrity;
                     spell[0] = ss;
+                    #endregion
                     spell[10] = chaosmeteor; //extra one just for checking condition, will not be used
                 }
 
