@@ -55,6 +55,7 @@ namespace AegisTimer
             {
                 aegistime = Game.GameTime;
                 aegispicked = true;
+                roshdead = false;
             }
         }
         private static void Game_OnUpdate(EventArgs args)
