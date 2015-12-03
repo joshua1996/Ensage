@@ -16,7 +16,7 @@ namespace AegisTimer
     {
         private static float aegistime, timeleft = 0, deathTime = 0;
         private static int sec = 0, min = 0;
-        private static bool aegispicked = false, _loaded = false, roshdead = false;
+        private static bool aegispicked = false, _loaded = false, roshdead = false, fog = false;
         private static Color BColor = new Color(0xC0111111);
         private static Color BOColor = new Color(0xFF444444);
         private static double ratiox = HUDInfo.ScreenSizeX() / 1920, ratioy = HUDInfo.ScreenSizeY() / 1080;
@@ -50,12 +50,12 @@ namespace AegisTimer
                 deathTime = Game.GameTime;
                 roshdead = true;
             }
-            aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
-            if (args.GameEvent.Name == "spec_item_pickup" && roshdead && aegis != null && aegis.Owner != null)
+            if (args.GameEvent.Name == "spec_item_pickup" && roshdead)
             {
                 aegistime = Game.GameTime;
                 aegispicked = true;
                 roshdead = false;
+                fog = true;
             }
         }
         private static void Game_OnUpdate(EventArgs args)
@@ -83,19 +83,17 @@ namespace AegisTimer
                 return;
             }
             #endregion
+            aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
+            if (!fog && aegis == null) aegispicked = false;
+            if (aegis != null && aegis.Owner != null && aegis.Owner.IsVisible) fog = false;
             if (aegispicked)
             {
                 timeleft = 300 - (Game.GameTime - aegistime);
             }
-            aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
-            if (aegis != null)
+            if (aegis.Owner.IsAlive && timeleft > 0)
             {
-                if (aegis.Owner.IsAlive && timeleft > 0)
-                {
-                    min = (int)Math.Floor(timeleft / 60);
-                    sec = (int)Math.Floor(timeleft % 60);
-                }
-                else aegispicked = false;
+                min = (int)Math.Floor(timeleft / 60);
+                sec = (int)Math.Floor(timeleft % 60);
             }
             else aegispicked = false;
         }
