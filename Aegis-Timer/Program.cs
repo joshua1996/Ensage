@@ -90,7 +90,7 @@ namespace AegisTimer
             {
                 timeleft = 300 - (Game.GameTime - aegistime);
             }
-            if (aegis.Owner.IsAlive && timeleft > 0)
+            if (aegispicked && timeleft > 0)
             {
                 min = (int)Math.Floor(timeleft / 60);
                 sec = (int)Math.Floor(timeleft % 60);
