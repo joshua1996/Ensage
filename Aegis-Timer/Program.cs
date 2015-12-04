@@ -23,14 +23,15 @@ namespace AegisTimer
         private static Vector2 size = new Vector2((float)(200*ratiox), (float)(60 *ratioy));
         public static double startposx = 1718.4 * ratiox, startposy = 356 * ratioy;
         private static readonly Dictionary<string, DotaTexture> TextureCache = new Dictionary<string, DotaTexture>();
-        private static Font FontArray;
+        private static Font font1;
         private static Item aegis;
         private static readonly Menu Menu = new Menu("Aegis Timer", "aegistimer", true);
         public static void Main()
         {
             Menu.AddItem(new MenuItem("aegistimeronoff", "Aegis Timer").SetValue(true));
+            Menu.AddItem(new MenuItem("displaymode", "Display Mode").SetValue(new StringList(new[] { "Beauty Mode", "Ugly Mode"}, 0)));
             Menu.AddToMainMenu();
-            FontArray = new Font(
+            font1 = new Font(
                     Drawing.Direct3DDevice9,
                     new FontDescription
                     {
@@ -42,6 +43,7 @@ namespace AegisTimer
             Game.OnFireEvent += Game_OnFireEvent;
             Game.OnUpdate += Game_OnUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
+            Drawing.OnEndScene += Drawing_OnEndScene;
         }
         private static void Game_OnFireEvent(FireEventEventArgs args)
         {
@@ -101,7 +103,7 @@ namespace AegisTimer
         {
             if (!_loaded) return;
 
-            if (aegispicked && Menu.Item("aegistimeronoff").GetValue<bool>())
+            if (aegispicked && Menu.Item("aegistimeronoff").GetValue<bool>() && Menu.Item("displaymode").GetValue<StringList>().SelectedIndex == 0)
             {
                 Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), size, BColor);
                 Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), size, BOColor, true);
@@ -117,6 +119,16 @@ namespace AegisTimer
             if (TextureCache.ContainsKey(name)) return TextureCache[name];
 
             return TextureCache[name] = Drawing.GetTexture(name);
+        }
+        static void Drawing_OnEndScene(EventArgs args)
+        {
+            
+            if (!_loaded) return;
+            if (aegispicked && Menu.Item("aegistimeronoff").GetValue<bool>() && Menu.Item("displaymode").GetValue<StringList>().SelectedIndex == 1)
+            {
+                string print = String.Format("Aegis reclaim in: {0}:{1}", min, sec);
+                DrawShadowText(print, (int)startposx, (int)(startposy-343*ratioy), Color.White, font1);
+            }
         }
         public static void DrawShadowText(string stext, int x, int y, Color color, Font f)
         {
