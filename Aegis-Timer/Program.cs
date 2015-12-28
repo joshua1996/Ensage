@@ -85,7 +85,8 @@ namespace AegisTimer
                 return;
             }
             #endregion
-            aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
+            if(fog)
+                aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
             if (!fog && aegis == null) aegispicked = false;
             if (aegis != null && aegis.Owner != null && aegis.Owner.IsVisible) fog = false;
             if (aegispicked)
