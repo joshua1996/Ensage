@@ -14,7 +14,7 @@ namespace AegisTimer
 {
     internal class Program
     {
-        private static float aegistime, timeleft = 0, deathTime = 0;
+        private static float aegistime, timeleft = 0;
         private static int sec = 0, min = 0;
         private static bool aegispicked = false, _loaded = false, roshdead = false, fog = false;
         private static Color BColor = new Color(0xC0111111);
@@ -49,7 +49,6 @@ namespace AegisTimer
         {
             if (args.GameEvent.Name == "dota_roshan_kill")
             {
-                deathTime = Game.GameTime;
                 roshdead = true;
             }
             if (args.GameEvent.Name == "spec_item_pickup" && roshdead)
@@ -85,20 +84,24 @@ namespace AegisTimer
                 return;
             }
             #endregion
-            if(fog)
-                aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
+            aegis = ObjectMgr.GetEntities<Item>().Find(item => item.Name == "item_aegis" && item.IsValid);
+            if (fog)
+            {
+                if (aegis != null && aegis.Owner != null && aegis.Owner.IsVisible) fog = false;
+            }
+               
             if (!fog && aegis == null) aegispicked = false;
-            if (aegis != null && aegis.Owner != null && aegis.Owner.IsVisible) fog = false;
+            
             if (aegispicked)
             {
                 timeleft = 300 - (Game.GameTime - aegistime);
+                if(timeleft > 0)
+                {
+                    min = (int)Math.Floor(timeleft / 60);
+                    sec = (int)Math.Floor(timeleft % 60);
+                }
+                else aegispicked = false;
             }
-            if (aegispicked && timeleft > 0)
-            {
-                min = (int)Math.Floor(timeleft / 60);
-                sec = (int)Math.Floor(timeleft % 60);
-            }
-            else aegispicked = false;
         }
         private static void Drawing_OnDraw(EventArgs args)
         {
