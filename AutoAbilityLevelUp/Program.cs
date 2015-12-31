@@ -123,7 +123,7 @@ namespace AutoAbilityLevelUp
                 for (int i = 0; i < count; i++) offskill1[i] = false;
                 for (int i = 0; i < 20 + skillnum; i++)
                 {
-                    sequence[i] = getskill(i);
+                    sequence[i] = -1;
                 }
                 if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Invoker)
                 {
