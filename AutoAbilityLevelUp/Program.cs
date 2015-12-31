@@ -51,7 +51,7 @@ namespace AutoAbilityLevelUp
         private static bool _leftMouseIsPress, leftMouseIsHold, move;
         private static bool[] offskill1 = new bool[25];
         private static readonly Menu Menu = new Menu("AutoAbilityLevelUp", "rootmenu", true);
-        private static Vector2 startloc = new Vector2(500, 700);
+        private static Vector2 startloc = new Vector2(400, 100);
         private static readonly Dictionary<string, DotaTexture> TextureDictionary = new Dictionary<string, DotaTexture>();
         private static string[] name = new string[5];
         #endregion
