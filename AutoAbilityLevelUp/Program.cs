@@ -120,15 +120,20 @@ namespace AutoAbilityLevelUp
                 spell[3] = me.Spellbook.SpellR;
                 spell[4] = me.Spellbook.Spells.FirstOrDefault(x => x.AbilityType == AbilityType.Attribute);
                 count = (int)(me.Level - me.AbilityPoints);
-                for (int i = 0; i < count; i++) offskill1[i] = false;
-                for (int i = 0; i < 20 + skillnum; i++)
-                {
-                    sequence[i] = -1;
-                }
                 if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Invoker)
                 {
                     skillnum = 4;
                     sequence[24] = 4;
+                }
+                for (int i = 0; i < count; i++) offskill1[i] = false;
+                for (int i = 0; i < 20 + skillnum; i++)
+                {
+                    sequence[i] = -1;
+                    for(int j = 0; j < skillnum; j++)
+                    {
+                        skill2d[j, i] = false;
+                        skill2dcasche[j, i] = false;
+                    }
                 }
                 for (int i = 0; i < skillnum; i++) name[i] = NameManager.Name(spell[i]);
                 skilltrue = true;
@@ -143,7 +148,7 @@ namespace AutoAbilityLevelUp
 
             if (Utils.SleepCheck("WaitPLSyoujerk"))
             {
-                if(abilitypoint > me.AbilityPoints)
+                if (abilitypoint > me.AbilityPoints)
                 {
                     abilitypoint = 0;
                     count++;
@@ -271,7 +276,7 @@ namespace AutoAbilityLevelUp
                 hold = true;
                 Utils.Sleep(250, "HoldButtonCd");
             }
-            else if(!leftMouseIsHold) hold = false;
+            else if (!leftMouseIsHold) hold = false;
             if (hold) clicked = true;
             else clicked = false;
             var newColor = isIn
