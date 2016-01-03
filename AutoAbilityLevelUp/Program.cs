@@ -125,6 +125,7 @@ namespace AutoAbilityLevelUp
                     skillnum = 4;
                     sequence[24] = 4;
                 }
+                else skillnum = 5;
                 for (int i = 0; i < count; i++) offskill1[i] = false;
                 for (int i = 0; i < 20 + skillnum; i++)
                 {
