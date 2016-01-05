@@ -147,8 +147,11 @@ namespace AutoAbilityLevelUp
                 if (!skilltrue)
                 {
                     spell[0] = me.Spellbook.SpellQ;
-                    spell[1] = me.Spellbook.SpellW;
-                    spell[2] = me.Spellbook.SpellE;
+                    if(ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[1] = me.Spellbook.SpellD;
+                    else spell[1] = me.Spellbook.SpellW;
+                    if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Chen || ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Beastmaster) spell[2] = me.Spellbook.SpellD;
+                    else if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[2] = me.Spellbook.SpellF;
+                    else spell[2] = me.Spellbook.SpellE;
                     spell[3] = me.Spellbook.SpellR;
                     spell[4] = me.Spellbook.Spells.FirstOrDefault(x => x.AbilityType == AbilityType.Attribute);
                     count = (int)(me.Level - me.AbilityPoints);
