@@ -5,6 +5,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Text;
 using Ensage;
+using System.IO;
 using Ensage.Common;
 using Ensage.Common.Menu;
 using SharpDX;
@@ -57,14 +58,35 @@ namespace AutoAbilityLevelUp
 
         public void IniWriteValue(string section, string key, string value)
         {
-            WritePrivateProfileString(section, key, value, this.Path);
+            //hero , number , boolean , path
+            //WritePrivateProfileString(section, key, value, this.Path);
+            FileStream fileStream = File.OpenWrite(this.Path + section + ".txt");
+            TextWriter textWriter = new StreamWriter(fileStream);
+            
+            textWriter.Write(key + "=" + value + "\n");
+
+            textWriter.Flush();
+            textWriter.Close();
         }
 
         public string IniReadValue(string section, string key)
         {
-            var temp = new StringBuilder(255);
-            var i = GetPrivateProfileString(section, key, "", temp, 255, this.Path);
-            return temp.ToString();
+            string temp, first;
+            int equal;
+            //var i = GetPrivateProfileString(section, key, "", temp, 255, this.Path);
+            FileStream fileStream = File.OpenRead(this.Path + section + ".txt");
+            TextReader textReader = new StreamReader(fileStream);
+            temp = textReader.ReadLine();
+            while (temp != null){
+                temp = textReader.ReadLine();
+                equal = temp.IndexOf('=');
+                first = temp.Substring(0, equal);
+                if (first.Equals(key)) {
+                    textReader.Close();
+                    return temp.Substring(equal + 1);
+                }
+            }
+            return "False";
         }
         #endregion
     }
@@ -85,7 +107,7 @@ namespace AutoAbilityLevelUp
         private static Vector2 startloc = new Vector2(450, 110);
         private static readonly Dictionary<string, DotaTexture> TextureDictionary = new Dictionary<string, DotaTexture>();
         private static readonly string MyPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-        static readonly InitHelper SaveLoadSysHelper = new InitHelper(MyPath + "\\AutoAbilityLevelUp.ini");
+        static readonly InitHelper SaveLoadSysHelper = new InitHelper(MyPath + "\\AutoAbilityLevelUp\\");
         private static string[] name = new string[5];
         #endregion
 
