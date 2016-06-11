@@ -1,14 +1,13 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
-using System.Text;
 using Ensage;
 using System.IO;
 using Ensage.Common;
 using Ensage.Common.Menu;
 using SharpDX;
+using System.Security.Permissions;
 
 namespace AutoAbilityLevelUp
 {
@@ -38,58 +37,9 @@ namespace AutoAbilityLevelUp
 
         #endregion
     }
-    internal class InitHelper
-    {
-        public string Path;
-
-        [DllImport("kernel32")]
-        private static extern long WritePrivateProfileString(string section,
-            string key, string val, string filePath);
-
-        [DllImport("kernel32")]
-        private static extern int GetPrivateProfileString(string section,
-            string key, string def, StringBuilder retVal,
-            int size, string filePath);
-
-        public InitHelper(string iniPath)
-        {
-            Path = iniPath;
-        }
-
-        public void IniWriteValue(string section, string key, string value)
-        {
-            //hero , number , boolean , path
-            //WritePrivateProfileString(section, key, value, this.Path);
-            FileStream fileStream = File.OpenWrite(this.Path + section + ".txt");
-            TextWriter textWriter = new StreamWriter(fileStream);
-            
-            textWriter.Write(key + "=" + value + "\n");
-
-            textWriter.Flush();
-            textWriter.Close();
-        }
-
-        public string IniReadValue(string section, string key)
-        {
-            string temp, first;
-            int equal;
-            //var i = GetPrivateProfileString(section, key, "", temp, 255, this.Path);
-            FileStream fileStream = File.OpenRead(this.Path + section + ".txt");
-            TextReader textReader = new StreamReader(fileStream);
-            temp = textReader.ReadLine();
-            while (temp != null){
-                temp = textReader.ReadLine();
-                equal = temp.IndexOf('=');
-                first = temp.Substring(0, equal);
-                if (first.Equals(key)) {
-                    textReader.Close();
-                    return temp.Substring(equal + 1);
-                }
-            }
-            return "False";
-        }
+  
         #endregion
-    }
+    
     internal class Program
     {
         #region member
@@ -99,15 +49,14 @@ namespace AutoAbilityLevelUp
         private static int skillnum = 5, count = 0;
         private static Ability[] spell = new Ability[5];
         private static int[] sequence = new int[25];
-        private static bool loaded = false, skilltrue = false, hold = false, save = false;
+        private static bool loaded = false, skilltrue = false, hold = false, save = false, delete = false, start = false, startcache = false;
         private static bool[,] skill2d = new bool[5, 25], skill2dcasche = new bool[5, 25];
         private static bool _leftMouseIsPress, leftMouseIsHold, move;
         private static bool[] offskill1 = new bool[25];
         private static readonly Menu Menu = new Menu("AutoAbilityLevelUp", "rootmenu", true);
         private static Vector2 startloc = new Vector2(450, 110);
         private static readonly Dictionary<string, DotaTexture> TextureDictionary = new Dictionary<string, DotaTexture>();
-        private static readonly string MyPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-        static readonly InitHelper SaveLoadSysHelper = new InitHelper(MyPath + "\\AutoAbilityLevelUp\\");
+        private static readonly string MyPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\AutoAbilityLevelUp\\";
         private static string[] name = new string[5];
         #endregion
 
@@ -120,6 +69,7 @@ namespace AutoAbilityLevelUp
             {
                 offskill1[i] = true;
             }
+            Directory.CreateDirectory(MyPath);
             Game.OnUpdate += Game_OnUpdate;
             Game.OnWndProc += Game_OnWndProc;
             Drawing.OnDraw += Drawing_OnDraw;
@@ -136,10 +86,11 @@ namespace AutoAbilityLevelUp
                 leftMouseIsHold = true;
             else leftMouseIsHold = false;
         }
+        [PermissionSetAttribute(SecurityAction.Assert, Unrestricted = true)]
         private static void Game_OnUpdate(EventArgs args)
         {
             #region Init
-            me = ObjectMgr.LocalHero;
+            me = ObjectManager.LocalHero;
             if (!loaded)
             {
                 if (!Game.IsInGame || me == null)
@@ -154,10 +105,6 @@ namespace AutoAbilityLevelUp
             {
                 loaded = false;
                 skilltrue = false;
-                for (int i = 0; i < 25; i++)
-                {
-                    offskill1[i] = true;
-                }
                 return;
             }
 
@@ -170,24 +117,25 @@ namespace AutoAbilityLevelUp
             if (!skilltrue)
             {
                 spell[0] = me.Spellbook.SpellQ;
-                if(ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[1] = me.Spellbook.SpellD;
+                if(ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[1] = me.Spellbook.SpellD;
                 else spell[1] = me.Spellbook.SpellW;
-                if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Chen || ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Beastmaster) spell[2] = me.Spellbook.SpellD;
-                else if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[2] = me.Spellbook.SpellF;
+                if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Chen || ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Beastmaster) spell[2] = me.Spellbook.SpellD;
+                else if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[2] = me.Spellbook.SpellF;
                 else spell[2] = me.Spellbook.SpellE;
                 spell[3] = me.Spellbook.SpellR;
                 spell[4] = me.Spellbook.Spells.FirstOrDefault(x => x.AbilityType == AbilityType.Attribute);
                 count = (int)(me.Level - me.AbilityPoints);
-                if (ObjectMgr.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Invoker)
+                if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Invoker)
                 {
                     skillnum = 4;
                     sequence[24] = 4;
                 }
                 else skillnum = 5;
-                for (int i = 0; i < count; i++) offskill1[i] = false;
+
                 try
                 {
-                    LoadThis("" + ObjectMgr.LocalHero.ClassID);
+
+                    LoadThis("" + ObjectManager.LocalHero.ClassID);
                     copy2darray();
                     for (int i = 0; i < 20 + skillnum; i++)
                     {
@@ -212,7 +160,21 @@ namespace AutoAbilityLevelUp
             if (save)
             {
                 save = false;
-                SaveThis("" + ObjectMgr.LocalHero.ClassID);
+                SaveThis("" + ObjectManager.LocalHero.ClassID);
+            }
+            if (delete)
+            {
+                delete = false;
+                File.Delete(MyPath + ObjectManager.LocalHero.ClassID + ".txt");
+                for (int i = 0; i < 20 + skillnum; i++)
+                {
+                    sequence[i] = -1;
+                    for (int j = 0; j < skillnum; j++)
+                    {
+                        skill2d[j, i] = false;
+                        skill2dcasche[j, i] = false;
+                    }
+                }
             }
             if (_leftMouseIsPress && Menu.Item("table").GetValue<KeyBind>().Active)
             {
@@ -221,20 +183,35 @@ namespace AutoAbilityLevelUp
                     sequence[i] = getskill(i);
                 }
             }
-
-            if (Utils.SleepCheck("WaitPLSyoujerk"))
+            if (start)
             {
-                if (abilitypoint > me.AbilityPoints)
+                if (startcache == false)
                 {
-                    abilitypoint = 0;
-                    count++;
-                    offskill1[count - 1] = false;
+                    startcache = true;
+                    for (int i = 0; i < count; i++) offskill1[i] = false;
                 }
-                if (me.AbilityPoints > 0 && sequence[count] != -1)
+                if (Utils.SleepCheck("WaitPLSyoujerk"))
                 {
-                    abilitypoint = me.AbilityPoints;
-                    Player.UpgradeAbility(me, spell[sequence[count]]);
-                    Utils.Sleep(500, "WaitPLSyoujerk");
+                    if (abilitypoint > me.AbilityPoints)
+                    {
+                        abilitypoint = 0;
+                        count++;
+                        offskill1[count - 1] = false;
+                    }
+                    if (me.AbilityPoints > 0 && sequence[count] != -1)
+                    {
+                        abilitypoint = me.AbilityPoints;
+                        Player.UpgradeAbility(me, spell[sequence[count]]);
+                        Utils.Sleep(500, "WaitPLSyoujerk");
+                    }
+                }
+            }
+            else if (startcache == true)
+            {
+                startcache = false;
+                for (int i = 0; i < count; i++)
+                {
+                    offskill1[i] = true;
                 }
             }
         }
@@ -282,6 +259,8 @@ namespace AutoAbilityLevelUp
                     }
                 }
                 DrawButton(startloc + new Vector2(((18+skillnum) * 25), ((skillnum) * 25)), 50, 25, ref save, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "SAVE");
+                DrawButton(startloc + new Vector2(((16 + skillnum) * 25), ((skillnum) * 25)), 50, 25, ref delete, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "DELETE");
+                DrawButton(startloc + new Vector2(((20 + skillnum) * 25), 0), 75, 25*skillnum, ref start, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "START");
                 DragButton(startloc - new Vector2(25, 12), 50, 12, ref move);
             }
         }
@@ -313,16 +292,46 @@ namespace AutoAbilityLevelUp
         }
         private static void LoadThis(string section)
         {
+            string temp, first;
+            int equal;
+            FileStream fileStream = File.OpenRead(MyPath + section + ".txt");
+            TextReader textReader = new StreamReader(fileStream);
             for (int i = 0; i < 20 + skillnum; i++)
+            {
                 for (int j = 0; j < skillnum; j++)
-                    skill2d[j, i] = Convert.ToBoolean(SaveLoadSysHelper.IniReadValue(section, "" + j + ", " + i));
+                {
+                    //skill2d[j, i] = Convert.ToBoolean(SaveLoadSysHelper.IniReadValue(section, "" + j + ", " + i));
+                    temp = textReader.ReadLine();
+                    while (temp != null)
+                    {
+                        equal = temp.IndexOf('=');
+                        first = temp.Substring(0, equal);
+                        if (first.Equals("" + j + ", " + i))
+                        {
+                            skill2d[j, i] = Convert.ToBoolean(temp.Substring(equal + 1));
+                            break;
+                        }
+                        temp = textReader.ReadLine();
+                    }
+                }
+            }
+            textReader.Close();
         }
 
         private static void SaveThis(string section)
         {
-            for(int i = 0; i < 20+skillnum; i++)
+
+            FileStream fileStream = File.OpenWrite(MyPath + section + ".txt");
+            TextWriter textWriter = new StreamWriter(fileStream);
+            for (int i = 0; i < 20 + skillnum; i++)
                 for (int j = 0; j < skillnum; j++)
-                    SaveLoadSysHelper.IniWriteValue(section, ""+j+", "+i, skill2d[j, i].ToString());
+                {
+                    //SaveLoadSysHelper.IniWriteValue(section, "" + j + ", " + i, skill2d[j, i].ToString());
+                    textWriter.WriteLine("" + j + ", " + i + "=" + skill2d[j, i].ToString());
+                }
+
+            textWriter.Flush();
+            textWriter.Close();
         }
         private static void DrawButton(Vector2 a, float w, float h, ref bool clicked, bool isActive, Color @on, Color off, string drawOnButtonText = "")
         {
