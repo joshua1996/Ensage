@@ -14,28 +14,23 @@ namespace InvokerSkill
     internal class Program
     {
         #region Members
-
-        private static bool _loaded;
-        private static bool skilltrue = false;
-        private static readonly Dictionary<string, SpellStruct> SpellInfo = new Dictionary<string, SpellStruct>();
-        private static Ability q, w, e, ss, coldsnap, ghostwalk, icewall, tornado, deafblast, forge, emp, alacrity, chaosmeteor;
-        private static Ability[] spell = new Ability[11];
-        private static int startspell = 10;
-        private static Vector2 _sizer = new Vector2(265, 300);
+        private static bool _loaded, skilltrue = false, wait = false;
         private static Hero me;
-        private static Font FontArray;
-        public static Dictionary<string, DotaTexture> _textureCache = new Dictionary<string, DotaTexture>();
+        private static readonly Menu Menu = new Menu("Invoker Skill", "main", true);
         public static double startposx = HUDInfo.ScreenSizeX() * 0.340104167, startposy = HUDInfo.ScreenSizeY() * 0.75;
         public static float size = (float)Math.Sqrt(2500 * (HUDInfo.ScreenSizeX() * HUDInfo.ScreenSizeY() / 2073600));
         public static Vector2 vector_size = new Vector2(size, size);
-        private static readonly Menu Menu = new Menu("Invoker Skill", "invokerskill", true);
-
-        private static char firstkey, secondkey, thirdkey, forthkey, fifthkey, sixthkey, seventhkey, eighthkey, ninthkey, tenthkey;
+        public static Dictionary<string, DotaTexture> _textureCache = new Dictionary<string, DotaTexture>();
+        private static readonly Dictionary<string, SpellStruct> SpellInfo = new Dictionary<string, SpellStruct>();
+        private static Ability[] spell = new Ability[10];
+        private static Font FontArray;
+        private static Ability q, w, e, temp;
         #endregion
 
         private static void Main()
         {
-            MenuItem quickcastoption = new MenuItem("quickcast", "Quick Cast").SetValue(false);
+            Menu.AddItem(new MenuItem("enable", "On").SetValue(true));
+            Menu.AddItem(new MenuItem("quickcast", "Quick Cast").SetValue(false));
             Menu changekey = new Menu("Change Key", "changekey");
             changekey.AddItem(new MenuItem("firstkey", "First Key").SetValue(new KeyBind('1', KeyBindType.Press)));
             changekey.AddItem(new MenuItem("secondkey", "Second Key").SetValue(new KeyBind('2', KeyBindType.Press)));
@@ -47,19 +42,19 @@ namespace InvokerSkill
             changekey.AddItem(new MenuItem("eighthkey", "Eighth Key").SetValue(new KeyBind('8', KeyBindType.Press)));
             changekey.AddItem(new MenuItem("ninthkey", "Ninth Key").SetValue(new KeyBind('9', KeyBindType.Press)));
             changekey.AddItem(new MenuItem("tenthkey", "Tenth Key").SetValue(new KeyBind('0', KeyBindType.Press)));
-            Menu.AddItem(quickcastoption);
+            Menu.AddItem(
+               new MenuItem("skill", "Skill Order").SetValue(
+                   new PriorityChanger(
+                       new List<string>(
+                           new[]
+                               {
+                                    "invoker_tornado", "invoker_chaos_meteor", "invoker_emp",
+                                    "invoker_deafening_blast", "invoker_cold_snap", "invoker_ghost_walk", "invoker_forge_spirit", "invoker_ice_wall",
+                                    "invoker_alacrity", "invoker_sun_strike"
+                                }),
+                       "skillorder")));
             Menu.AddSubMenu(changekey);
             Menu.AddToMainMenu();
-            firstkey = Convert.ToChar(Menu.Item("firstkey").GetValue<KeyBind>().Key);
-            secondkey = Convert.ToChar(Menu.Item("secondkey").GetValue<KeyBind>().Key);
-            thirdkey = Convert.ToChar(Menu.Item("thirdkey").GetValue<KeyBind>().Key);
-            forthkey = Convert.ToChar(Menu.Item("forthkey").GetValue<KeyBind>().Key);
-            fifthkey = Convert.ToChar(Menu.Item("fifthkey").GetValue<KeyBind>().Key);
-            sixthkey = Convert.ToChar(Menu.Item("sixthkey").GetValue<KeyBind>().Key);
-            seventhkey = Convert.ToChar(Menu.Item("seventhkey").GetValue<KeyBind>().Key);
-            eighthkey = Convert.ToChar(Menu.Item("eighthkey").GetValue<KeyBind>().Key);
-            ninthkey = Convert.ToChar(Menu.Item("ninthkey").GetValue<KeyBind>().Key);
-            tenthkey = Convert.ToChar(Menu.Item("tenthkey").GetValue<KeyBind>().Key);
             FontArray = new Font(
                     Drawing.Direct3DDevice9,
                     new FontDescription
@@ -70,8 +65,6 @@ namespace InvokerSkill
                         Quality = FontQuality.Default
                     });
             Game.OnUpdate += Game_OnUpdate;
-            _loaded = false;
-            Game.OnWndProc += Game_OnWndProc;
             Drawing.OnDraw += Drawing_OnDraw;
             Drawing.OnEndScene += Drawing_OnEndScene;
         }
@@ -93,39 +86,10 @@ namespace InvokerSkill
                 return new[] { _oneAbility, _twoAbility, _threeAbility };
             }
         }
-        private static void Game_OnWndProc(WndEventArgs args)
-        {
-            if (Game.IsChatOpen)
-                return;
-            //  if(Game.IsKeyDown(0x11)){
-            if (args.WParam == firstkey)
-                startspell = 1;
-            else if (args.WParam == secondkey)
-                startspell = 2;
-            else if (args.WParam == thirdkey)
-                startspell = 3;
-            else if (args.WParam == forthkey)
-                startspell = 4;
-            else if (args.WParam == fifthkey)
-                startspell = 5;
-            else if (args.WParam == sixthkey)
-                startspell = 6;
-            else if (args.WParam == seventhkey)
-                startspell = 7;
-            else if (args.WParam == eighthkey)
-                startspell = 8;
-            else if (args.WParam == ninthkey)
-                startspell = 9;
-            else if (args.WParam == tenthkey)
-                startspell = 0;
-            else startspell = 10;
-            // }
-        }
-
         private static void Game_OnUpdate(EventArgs args)
         {
             #region Init
-            me = ObjectMgr.LocalHero;
+            me = ObjectManager.LocalHero;
 
 
             if (!_loaded)
@@ -141,115 +105,13 @@ namespace InvokerSkill
             if (!Game.IsInGame || me == null)
             {
                 _loaded = false;
-                PrintInfo("> Invorker unLoaded");
                 return;
             }
 
-            if (Game.IsPaused)
+            if (Game.IsPaused || !Menu.Item("enable").GetValue<bool>())
             {
                 return;
             }
-
-            #endregion
-
-
-
-            if (startspell < 10)
-            {
-
-                if (!skilltrue)
-                {
-                    skilltrue = true;
-                    q = me.Spellbook.SpellQ;
-                    w = me.Spellbook.SpellW;
-                    e = me.Spellbook.SpellE;
-
-                    ss = me.FindSpell("invoker_sun_strike");
-                    coldsnap = me.FindSpell("invoker_cold_snap");
-                    ghostwalk = me.FindSpell("invoker_ghost_walk");
-                    icewall = me.FindSpell("invoker_ice_wall");
-                    tornado = me.FindSpell("invoker_tornado");
-                    deafblast = me.FindSpell("invoker_deafening_blast");
-                    forge = me.FindSpell("invoker_forge_spirit");
-                    emp = me.FindSpell("invoker_emp");
-                    alacrity = me.FindSpell("invoker_alacrity");
-                    chaosmeteor = me.FindSpell("invoker_chaos_meteor");
-
-                    SpellInfo.Add(ss.Name, new SpellStruct(e, e, e));
-                    SpellInfo.Add(coldsnap.Name, new SpellStruct(q, q, q));
-                    SpellInfo.Add(ghostwalk.Name, new SpellStruct(q, q, w));
-                    SpellInfo.Add(icewall.Name, new SpellStruct(q, q, e));
-                    SpellInfo.Add(tornado.Name, new SpellStruct(w, w, q));
-                    SpellInfo.Add(deafblast.Name, new SpellStruct(q, w, e));
-                    SpellInfo.Add(forge.Name, new SpellStruct(e, e, q));
-                    SpellInfo.Add(emp.Name, new SpellStruct(w, w, w));
-                    SpellInfo.Add(alacrity.Name, new SpellStruct(w, w, e));
-                    SpellInfo.Add(chaosmeteor.Name, new SpellStruct(e, e, w));
-                    spell[1] = tornado;
-                    spell[2] = chaosmeteor;
-                    spell[3] = emp;
-                    spell[4] = deafblast;
-                    spell[5] = coldsnap;
-                    spell[6] = ghostwalk;
-                    spell[7] = forge;
-                    spell[8] = icewall;
-                    spell[9] = alacrity;
-                    spell[0] = ss;
-                    spell[10] = chaosmeteor; //extra one just for checking condition, will not be used
-                }
-
-                SpellStruct s;
-                var active1 = me.Spellbook.Spell4;
-                var active2 = me.Spellbook.Spell5;
-                if (Equals(spell[startspell], active1)) //If the skill inside D
-                {
-                    spell[startspell].UseAbility();
-                    if (Utils.SleepCheck("spell1sleep"))
-                    {
-                        if (!Menu.Item("quickcast").GetValue<bool>())
-                            Game.ExecuteCommand("dota_ability_execute 3");
-                        else Game.ExecuteCommand("dota_ability_quickcast 3");
-                        Utils.Sleep(150, "spell1sleep");
-                    }
-
-                }
-                else if (Equals(spell[startspell], active2)) //If the skill inside F
-                {
-                    spell[startspell].UseAbility();
-                    if (Utils.SleepCheck("spell2sleep"))
-                    {
-                        if (!Menu.Item("quickcast").GetValue<bool>())
-                            Game.ExecuteCommand("dota_ability_execute 4");
-                        else Game.ExecuteCommand("dota_ability_quickcast 4");
-                        Utils.Sleep(150, "spell2sleep");
-                    }
-                }
-                else //If not inside D and F, invoke the skill
-                {
-                    if (SpellInfo.TryGetValue(spell[startspell].Name, out s))
-                    {
-                        var invoke = me.FindSpell("invoker_invoke");
-                        var spells = s.GetNeededAbilities();
-                        if (spells[0] != null) spells[0].UseAbility();
-                        if (spells[1] != null) spells[1].UseAbility();
-                        if (spells[2] != null) spells[2].UseAbility();
-                        invoke.UseAbility();
-                    }
-                }
-                startspell = 10;
-            }
-
-
-        }
-
-        private static void Drawing_OnDraw(EventArgs args)
-        {
-            var player = ObjectMgr.LocalPlayer;
-            if (player == null || player.Team == Team.Observer || !_loaded)
-            {
-                return;
-            }
-            if (ObjectMgr.LocalHero.ClassID != ClassID.CDOTA_Unit_Hero_Invoker) return;
             if (!skilltrue)
             {
                 skilltrue = true;
@@ -257,71 +119,117 @@ namespace InvokerSkill
                 w = me.Spellbook.SpellW;
                 e = me.Spellbook.SpellE;
 
-                ss = me.FindSpell("invoker_sun_strike");
-                coldsnap = me.FindSpell("invoker_cold_snap");
-                ghostwalk = me.FindSpell("invoker_ghost_walk");
-                icewall = me.FindSpell("invoker_ice_wall");
-                tornado = me.FindSpell("invoker_tornado");
-                deafblast = me.FindSpell("invoker_deafening_blast");
-                forge = me.FindSpell("invoker_forge_spirit");
-                emp = me.FindSpell("invoker_emp");
-                alacrity = me.FindSpell("invoker_alacrity");
-                chaosmeteor = me.FindSpell("invoker_chaos_meteor");
-
-                SpellInfo.Add(ss.Name, new SpellStruct(e, e, e));
-                SpellInfo.Add(coldsnap.Name, new SpellStruct(q, q, q));
-                SpellInfo.Add(ghostwalk.Name, new SpellStruct(q, q, w));
-                SpellInfo.Add(icewall.Name, new SpellStruct(q, q, e));
-                SpellInfo.Add(tornado.Name, new SpellStruct(w, w, q));
-                SpellInfo.Add(deafblast.Name, new SpellStruct(q, w, e));
-                SpellInfo.Add(forge.Name, new SpellStruct(e, e, q));
-                SpellInfo.Add(emp.Name, new SpellStruct(w, w, w));
-                SpellInfo.Add(alacrity.Name, new SpellStruct(w, w, e));
-                SpellInfo.Add(chaosmeteor.Name, new SpellStruct(e, e, w));
-                spell[1] = tornado;
-                spell[2] = chaosmeteor;
-                spell[3] = emp;
-                spell[4] = deafblast;
-                spell[5] = coldsnap;
-                spell[6] = ghostwalk;
-                spell[7] = forge;
-                spell[8] = icewall;
-                spell[9] = alacrity;
-                spell[0] = ss;
-                spell[10] = chaosmeteor; //extra one just for checking condition, will not be used
+                SpellInfo.Add("invoker_sun_strike", new SpellStruct(e, e, e));
+                SpellInfo.Add("invoker_cold_snap", new SpellStruct(q, q, q));
+                SpellInfo.Add("invoker_ghost_walk", new SpellStruct(q, q, w));
+                SpellInfo.Add("invoker_ice_wall", new SpellStruct(q, q, e));
+                SpellInfo.Add("invoker_tornado", new SpellStruct(w, w, q));
+                SpellInfo.Add("invoker_deafening_blast", new SpellStruct(q, w, e));
+                SpellInfo.Add("invoker_forge_spirit", new SpellStruct(e, e, q));
+                SpellInfo.Add("invoker_emp", new SpellStruct(w, w, w));
+                SpellInfo.Add("invoker_alacrity", new SpellStruct(w, w, e));
+                SpellInfo.Add("invoker_chaos_meteor", new SpellStruct(e, e, w));
             }
+            var spells = Menu.Item("skill").GetValue<PriorityChanger>().ItemList.OrderByDescending(
+            xx => Menu.Item("skill").GetValue<PriorityChanger>().GetPriority(xx));
+            int i = 0;
+            foreach (var spellx in spells)
+            {
+                spell[i] = me.FindSpell(spellx);
+                i++;
+            }
+            #endregion
+            if (Utils.SleepCheck("waitpls"))
+            {
+                if (wait)
+                {
+                    var active1 = me.Spellbook.Spell4;
+                    if (temp == active1)
+                    {
+                        wait = false;
+
+                        if (Menu.Item("quickcast").GetValue<bool>())
+                            Game.ExecuteCommand("dota_ability_quickcast 3");
+                        else Game.ExecuteCommand("dota_ability_execute 3");
+                        Utils.Sleep(150, "waitpls");
+                    }
+                }
+                else if (Menu.Item("firstkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[0]);
+                }
+                else if (Menu.Item("secondkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[1]);
+                }
+                else if (Menu.Item("thirdkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[2]);
+                }
+                else if (Menu.Item("forthkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[3]);
+                }
+                else if (Menu.Item("fifthkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[4]);
+                }
+                else if (Menu.Item("sixthkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[5]);
+                }
+                else if (Menu.Item("seventhkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[6]);
+                }
+                else if (Menu.Item("eighthkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[7]);
+                }
+                else if (Menu.Item("ninthkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[8]);
+                }
+                else if (Menu.Item("tenthkey").GetValue<KeyBind>().Active)
+                {
+                    UseSkill(spell[9]);
+                }
+                
+            }
+
+        }
+
+        private static void Drawing_OnDraw(EventArgs args)
+        {
+            var player = ObjectManager.LocalPlayer;
+            if (player == null || player.Team == Team.Observer || !_loaded)
+            {
+                return;
+            }
+            if (ObjectManager.LocalHero.ClassID != ClassID.CDOTA_Unit_Hero_Invoker || !Menu.Item("enable").GetValue<bool>()) return;
+            
             float[] spellcd = new float[10];
             float[] spelltotalcd = new float[10];
-            for (int i = 0; i < 10; i++)
+            for (int j = 0; j < 10; j++)
             {
-                if (spell[i] == null) continue;
-                spellcd[i] = spell[i].Cooldown;
-                spelltotalcd[i] = spell[i].CooldownLength;
+                if (spell[j] == null) continue;
+                spellcd[j] = spell[j].Cooldown;
+                spelltotalcd[j] = spell[j].CooldownLength;
             }
-            Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_tornado.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_chaos_meteor.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 2, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_emp.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 3, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_deafening_blast.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 4, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_cold_snap.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 5, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_ghost_walk.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 6, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_forge_spirit.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 7, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_ice_wall.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 8, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_alacrity.vmat"));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 9, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/invoker_sun_strike.vmat"));
+            
+            
+            var spells = Menu.Item("skill").GetValue<PriorityChanger>().ItemList.OrderByDescending(
+                xx => Menu.Item("skill").GetValue<PriorityChanger>().GetPriority(xx));
+            int i = 0;
+            foreach (var spellx in spells)
+            {
+               // if (i >= 5 && i <= 10) continue;
+                Drawing.DrawRect(new Vector2((float)startposx + size * i, (float)startposy), vector_size, GetTexture("materials/ensage_ui/spellicons/"+ spellx +".vmat"));
+                Drawing.DrawRect(new Vector2((float)startposx + size * i, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
+                i++;
+            }
 
-
-            //draw box
-            Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 2, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 3, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 4, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 5, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 6, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 7, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 8, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-            Drawing.DrawRect(new Vector2((float)startposx + size * 9, (float)startposy), vector_size, new Color(0, 0, 0, 150), true);
-
+            
             Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[1] / spelltotalcd[1])) * 50), new Color(255, 255, 255, 70));
             Drawing.DrawRect(new Vector2((float)startposx + size, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[2] / spelltotalcd[2])) * 50), new Color(255, 255, 255, 70));
             Drawing.DrawRect(new Vector2((float)startposx + size * 2, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[3] / spelltotalcd[3])) * 50), new Color(255, 255, 255, 70));
@@ -332,7 +240,9 @@ namespace InvokerSkill
             Drawing.DrawRect(new Vector2((float)startposx + size * 7, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[8] / spelltotalcd[8])) * 50), new Color(255, 255, 255, 70));
             Drawing.DrawRect(new Vector2((float)startposx + size * 8, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[9] / spelltotalcd[9])) * 50), new Color(255, 255, 255, 70));
             Drawing.DrawRect(new Vector2((float)startposx + size * 9, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[0] / spelltotalcd[0])) * 50), new Color(255, 255, 255, 70));
+            
             //-----------------------------------------not learn skill dim--------------------------------------------------------------
+            #region not_learn
             if (q.AbilityState == AbilityState.NotLearned || w.AbilityState == AbilityState.NotLearned)
             {
                 Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), vector_size, new Color(0, 0, 0, 200));
@@ -365,7 +275,9 @@ namespace InvokerSkill
             {
                 Drawing.DrawRect(new Vector2((float)startposx + size * 3, (float)startposy), vector_size, new Color(0, 0, 0, 200));
             }
+            #endregion
             //------------------------------------------------------------------------------------------------------------------------------------
+            #region cooldown
             if (spellcd[1] != 0)
             {
                 Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), vector_size, new Color(0, 0, 0, 150));
@@ -406,23 +318,63 @@ namespace InvokerSkill
             {
                 Drawing.DrawRect(new Vector2((float)startposx + size * 9, (float)startposy), vector_size, new Color(0, 0, 0, 150));
             }
-
+            #endregion
+            
         }
         static void Drawing_OnEndScene(EventArgs args)
         {
-            if (Drawing.Direct3DDevice9 == null || Drawing.Direct3DDevice9.IsDisposed || !Game.IsInGame)
+            if (Drawing.Direct3DDevice9 == null || Drawing.Direct3DDevice9.IsDisposed || !Game.IsInGame || !Menu.Item("enable").GetValue<bool>())
                 return;
-            if (ObjectMgr.LocalHero.ClassID != ClassID.CDOTA_Unit_Hero_Invoker) return;
-            DrawShadowText(firstkey.ToString(), (int)startposx + 3, (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(secondkey.ToString(), (int)startposx + (int)(size + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(thirdkey.ToString(), (int)startposx + (int)(size * 2 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(forthkey.ToString(), (int)startposx + (int)(size * 3 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(fifthkey.ToString(), (int)startposx + (int)(size * 4 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(sixthkey.ToString(), (int)startposx + (int)(size * 5 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(seventhkey.ToString(), (int)startposx + (int)(size * 6 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(eighthkey.ToString(), (int)startposx + (int)(size * 7 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(ninthkey.ToString(), (int)startposx + (int)(size * 8 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
-            DrawShadowText(tenthkey.ToString(), (int)startposx + (int)(size * 9 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("firstkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + 3, (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("secondkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("thirdkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 2 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("forthkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 3 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("fifthkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 4 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("sixthkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 5 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("seventhkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 6 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("eighthkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 7 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("ninthkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 8 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+            DrawShadowText(Convert.ToChar(Menu.Item("tenthkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size * 9 + 3), (int)startposy + 1, Color.LightCyan, FontArray);
+        }
+        public static void UseSkill(Ability skill)
+        {
+            var active1 = me.Spellbook.Spell4;
+            var active2 = me.Spellbook.Spell5;
+            if (Equals(skill, active1)) //If the skill inside D
+            {
+                if (Menu.Item("quickcast").GetValue<bool>())
+                    Game.ExecuteCommand("dota_ability_quickcast 3");
+                else Game.ExecuteCommand("dota_ability_execute 3");
+                Utils.Sleep(150, "waitpls");
+
+            }
+            else if (Equals(skill, active2)) //If the skill inside F
+            {
+                if (Menu.Item("quickcast").GetValue<bool>())
+                    Game.ExecuteCommand("dota_ability_quickcast 4");
+                else Game.ExecuteCommand("dota_ability_execute 4");
+                Utils.Sleep(150, "waitpls");
+
+            }
+            else //If not inside D and F, invoke the skill
+            {
+                SpellStruct s;
+                if (SpellInfo.TryGetValue(skill.Name, out s))
+                {
+                    var invoke = me.FindSpell("invoker_invoke");
+                    var spells = s.GetNeededAbilities();
+                    if (spells[0] != null) spells[0].UseAbility();
+                    if (spells[1] != null) spells[1].UseAbility();
+                    if (spells[2] != null) spells[2].UseAbility();
+                    if (invoke.CanBeCasted())
+                    {
+                        invoke.UseAbility();
+                        wait = true;
+                        temp = skill;
+                    }
+                }
+            }
+        
         }
         public static DotaTexture GetTexture(string name)
         {
@@ -435,30 +387,6 @@ namespace InvokerSkill
             f.DrawText(null, stext, x + 1, y + 1, Color.Black);
             f.DrawText(null, stext, x, y, color);
         }
-        #region Helpers
-        public static void PrintInfo(string text, params object[] arguments)
-        {
-            PrintEncolored(text, ConsoleColor.White, arguments);
-        }
-
-        public static void PrintSuccess(string text, params object[] arguments)
-        {
-            PrintEncolored(text, ConsoleColor.Green, arguments);
-        }
-
-        public static void PrintError(string text, params object[] arguments)
-        {
-            PrintEncolored(text, ConsoleColor.Red, arguments);
-        }
-
-        public static void PrintEncolored(string text, ConsoleColor color, params object[] arguments)
-        {
-            var clr = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.WriteLine(text, arguments);
-            Console.ForegroundColor = clr;
-        }
-        #endregion
 
     }
 }
