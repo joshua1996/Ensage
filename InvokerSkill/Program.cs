@@ -230,16 +230,16 @@ namespace InvokerSkill
             }
 
             
-            Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[1] / spelltotalcd[1])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[2] / spelltotalcd[2])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 2, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[3] / spelltotalcd[3])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 3, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[4] / spelltotalcd[4])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 4, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[5] / spelltotalcd[5])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 5, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[6] / spelltotalcd[6])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 6, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[7] / spelltotalcd[7])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 7, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[8] / spelltotalcd[8])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 8, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[9] / spelltotalcd[9])) * 50), new Color(255, 255, 255, 70));
-            Drawing.DrawRect(new Vector2((float)startposx + size * 9, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[0] / spelltotalcd[0])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[0] / spelltotalcd[0])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[1] / spelltotalcd[1])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 2, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[2] / spelltotalcd[2])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 3, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[3] / spelltotalcd[3])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 4, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[4] / spelltotalcd[4])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 5, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[5] / spelltotalcd[5])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 6, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[6] / spelltotalcd[6])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 7, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[7] / spelltotalcd[7])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 8, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[8] / spelltotalcd[8])) * 50), new Color(255, 255, 255, 70));
+            Drawing.DrawRect(new Vector2((float)startposx + size * 9, (float)startposy), new Vector2(50, 50 - (1 - (spellcd[9] / spelltotalcd[9])) * 50), new Color(255, 255, 255, 70));
             
             //-----------------------------------------not learn skill dim--------------------------------------------------------------
             #region not_learn
