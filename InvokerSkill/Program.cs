@@ -363,14 +363,18 @@ namespace InvokerSkill
                 {
                     var invoke = me.FindSpell("invoker_invoke");
                     var spells = s.GetNeededAbilities();
-                    if (spells[0] != null) spells[0].UseAbility();
-                    if (spells[1] != null) spells[1].UseAbility();
-                    if (spells[2] != null) spells[2].UseAbility();
                     if (invoke.CanBeCasted())
                     {
+                        if (spells[0] != null) spells[0].UseAbility();
+                        if (spells[1] != null) spells[1].UseAbility();
+                        if (spells[2] != null) spells[2].UseAbility();
                         invoke.UseAbility();
                         wait = true;
                         temp = skill;
+                    }
+                    else {
+                        invoke.UseAbility();
+                        Utils.Sleep(150, "waitpls");
                     }
                 }
             }
