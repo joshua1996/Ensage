@@ -57,6 +57,7 @@ namespace AutoAbilityLevelUp
         private static Vector2 startloc = new Vector2(450, 110);
         private static readonly Dictionary<string, DotaTexture> TextureDictionary = new Dictionary<string, DotaTexture>();
         private static readonly string MyPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\AutoAbilityLevelUp\\";
+        private static DotaTexture background = Drawing.GetTexture("materials/ensage_ui/mike/background.vmat");
         private static string[] name = new string[5];
         #endregion
 
@@ -156,6 +157,7 @@ namespace AutoAbilityLevelUp
                 }
                 for (int i = 0; i < skillnum; i++) name[i] = NameManager.Name(spell[i]);
                 skilltrue = true;
+
             }
             if (save)
             {
@@ -258,6 +260,8 @@ namespace AutoAbilityLevelUp
                         DrawButton(startloc + new Vector2((i * 25), (j * 25)), 25, 25, ref skill2d[j, i], offskill1[i], new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "" + (i + 1));
                     }
                 }
+                    
+                Drawing.DrawRect(startloc, new Vector2(1024, 512), background);
                 DrawButton(startloc + new Vector2(((18+skillnum) * 25), ((skillnum) * 25)), 50, 25, ref save, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "SAVE");
                 DrawButton(startloc + new Vector2(((16 + skillnum) * 25), ((skillnum) * 25)), 50, 25, ref delete, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "DELETE");
                 DrawButton(startloc + new Vector2(((20 + skillnum) * 25), 0), 75, 25*skillnum, ref start, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "START");
