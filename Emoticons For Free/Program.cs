@@ -1,8 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Ensage;
 using Ensage.Common;
 using Ensage.Common.Menu;
@@ -16,14 +13,16 @@ namespace Emoticons_For_Free
         private const int WmKeyup = 0x0101;
         public static Dictionary<string, DotaTexture> _textureCache = new Dictionary<string, DotaTexture>();
         private static Vector2 startloc, diff;
-        private static bool _leftMouseIsPress, leftMouseIsHold, loaded = false, team = true, hold = false, active = false, min = true; 
-        private static string[] name = { "blush", "cheeky", "cool", "crazy", "cry", "disapprove", "doubledamage", "facepalm", "happytears", "haste", "hex", "highfive", "huh", "hush", "illusion", "invis", "laugh", "rage", "regen", "sad", "sick", "sleeping", "smile", "surprise", "wink", "aaaah", "burn", "hide", "iceburn", "tears", "fail", "goodjob", "headshot", "heart", "horse", "techies", "grave", "puppy", "cocky", "devil", "happy", "thinking", "tp", "salty", "angel", "blink", "bts3_bristle", "stunned", "disappear", "fire", "bounty", "troll", "gross", "ggdire", "ggradiant", "yolo", "throwgame", "aegis2015", "eyeroll", "dac15_tired", "dac15_blush", "dac15_face", "dac15_cool", "dac15_duel", "dac15_transform", "dac15_stab", "dac15_frog", "dac15_surprise", "bts3_bristle", "bts3_godz", "bts3_lina", "bts3_merlini", "bts3_rosh", "ti4copper", "ti4bronze", "ti4silver", "ti4gold", "ti4platinum", "ti4diamond" };
+        private static bool _leftMouseIsPress, leftMouseIsHold, team = true, hold = false, active = false, min = true; 
+        private static string[] name = { "blush", "cheeky", "cool", "crazy", "cry", "disapprove", "doubledamage", "facepalm", "happytears", "haste", "hex", "highfive", "huh", "hush", "illusion", "invisibility", "laugh", "rage", "regeneration", "sad", "sick", "sleeping", "smile", "surprise", "wink", "aaaah", "burn", "hide", "iceburn", "tears", "fail", "goodjob", "headshot", "heart", "horse", "techies", "grave", "puppy", "cocky", "devil", "happy", "thinking", "tp", "salty", "angel", "blink", "bts3_bristle", "stunned", "disappear", "fire", "bounty", "troll", "gross", "ggdire", "ggradiant", "yolo", "throwgame", "aegis2015", "eyeroll", "dac15_tired", "dac15_blush", "dac15_face", "dac15_cool", "dac15_duel", "dac15_transform", "dac15_stab", "dac15_frog", "dac15_surprise", "bts3_bristle", "bts3_godz", "bts3_lina", "bts3_merlini", "bts3_rosh", "ti4copper", "ti4bronze", "ti4silver", "ti4gold", "ti4platinum", "ti4diamond" };
         private static string[] emo = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
 
         static void Main(string[] args)
         {
-            Menu.AddItem(new MenuItem("xposition", "X Position").SetValue(new Slider(450,1,(int)HUDInfo.ScreenSizeX())));
-            Menu.AddItem(new MenuItem("yposition", "Y Position").SetValue(new Slider(110,1,(int)HUDInfo.ScreenSizeY())));
+            Menu Position = new Menu("Position", "position");
+            Position.AddItem(new MenuItem("xposition", "X Position").SetValue(new Slider(450,1,(int)HUDInfo.ScreenSizeX())));
+            Position.AddItem(new MenuItem("yposition", "Y Position").SetValue(new Slider(110,1,(int)HUDInfo.ScreenSizeY())));
+            Menu.AddSubMenu(Position);
             Menu.AddToMainMenu();
             
             Game.OnWndProc += Game_OnWndProc;
@@ -76,11 +75,11 @@ namespace Emoticons_For_Free
                 Game.ExecuteCommand(((team) ? "say_team " : "say ") + emoticon);
                 Utils.Sleep(250, "ClickButtonCd");
             }
-            if(emo_name == "invis" || emo_name == "regen" || emo_name == "bounty")
+            if(emo_name == "bounty")
                 Drawing.DrawRect(loc, new Vector2(w, h), GetTexture("materials/ensage_ui/minirunes/" + emo_name + ".vmat"));
             else
                 Drawing.DrawRect(loc, new Vector2(w, h), GetTexture("materials/ensage_ui/emoticons/" + emo_name + ".vmat"));
-            var newColor = isIn ? (_leftMouseIsPress ? new Color(0, 0, 0, 50) : new Color(0, 0, 0, 25)) : new Color(0, 0, 0, 0);
+            var newColor = isIn ? (_leftMouseIsPress ? new Color(0, 0, 0, 150) : new Color(0, 0, 0, 70)) : new Color(0, 0, 0, 0);
             Drawing.DrawRect(loc, new Vector2(w, h), newColor);
         }
         private static void DragButton(Vector2 loc, float w, float h)
