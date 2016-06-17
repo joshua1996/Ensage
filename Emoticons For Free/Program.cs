@@ -70,7 +70,7 @@ namespace Emoticons_For_Free
         private static void DrawEmoButton(Vector2 loc, float w, float h, string emoticon, string emo_name)
         {
             var isIn = Utils.IsUnderRectangle(Game.MouseScreenPosition, loc.X, loc.Y, w, h);
-            if (_leftMouseIsPress && Utils.SleepCheck("ClickButtonCd") && isIn)
+            if (_leftMouseIsPress && Utils.SleepCheck("ClickButtonCd") && isIn && !hold)
             {
                 Game.ExecuteCommand(((team) ? "say_team " : "say ") + emoticon);
                 Utils.Sleep(250, "ClickButtonCd");
@@ -86,7 +86,7 @@ namespace Emoticons_For_Free
         {
             var isIn = Utils.IsUnderRectangle(Game.MouseScreenPosition, loc.X, loc.Y, w, h);
 
-            if (leftMouseIsHold && Utils.SleepCheck("HoldButtonCd") && isIn)
+            if (leftMouseIsHold && Utils.SleepCheck("HoldButtonCd") && isIn && !hold)
             {
                 hold = true;
                 diff = Game.MouseScreenPosition - startloc;
