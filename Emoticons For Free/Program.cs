@@ -1,369 +1,86 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
 using Ensage;
-using System.IO;
 using Ensage.Common;
 using Ensage.Common.Menu;
 using SharpDX;
-using System.Security.Permissions;
 
-namespace AutoAbilityLevelUp
+namespace Emoticons_For_Free
 {
-    #region classes
-    internal class NameManager
+    class Program
     {
-        #region Static Fields
-
-        public static Dictionary<float, string> NameDictionary = new Dictionary<float, string>();
-
-        #endregion
-
-        #region Public Methods and Operators
-
-        public static string Name(Entity entity)
-        {
-            var handle = entity.Handle;
-            string name;
-            if (NameDictionary.TryGetValue(handle, out name))
-            {
-                return name;
-            }
-            name = entity.Name;
-            NameDictionary.Add(handle, name);
-            return name;
-        }
-
-        #endregion
-    }
-
-    #endregion
-
-    internal class Program
-    {
-        #region member
-        private static Hero me;
-        private static uint abilitypoint = 0;
+        private static readonly Menu Menu = new Menu("Emoticons", "emotocons", true);
         private const int WmKeyup = 0x0101;
-        private static int skillnum = 5, count = 0;
-        private static Ability[] spell = new Ability[5];
-        private static int[] sequence = new int[25];
-        private static bool loaded = false, skilltrue = false, hold = false, save = false, delete = false, start = false, startcache = false;
-        private static bool[,] skill2d = new bool[5, 25], skill2dcasche = new bool[5, 25];
-        private static bool _leftMouseIsPress, leftMouseIsHold;
-        private static bool[] offskill1 = new bool[25];
-        private static readonly Menu Menu = new Menu("AutoAbilityLevelUp", "rootmenu", true);
-        private static Vector2 startloc = new Vector2(450, 110), diff;
-        private static readonly Dictionary<string, DotaTexture> TextureDictionary = new Dictionary<string, DotaTexture>();
-        private static readonly string MyPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\AutoAbilityLevelUp\\";
-        private static string[] name = new string[5];
-        #endregion
+        public static Dictionary<string, DotaTexture> _textureCache = new Dictionary<string, DotaTexture>();
+        private static Vector2 startloc, diff;
+        private static bool _leftMouseIsPress, leftMouseIsHold, team = true, hold = false, active = false, min = true; 
+        private static string[] name = { "blush", "cheeky", "cool", "crazy", "cry", "disapprove", "doubledamage", "facepalm", "happytears", "haste", "hex", "highfive", "huh", "hush", "illusion", "invisibility", "laugh", "rage", "regeneration", "sad", "sick", "sleeping", "smile", "surprise", "wink", "aaaah", "burn", "hide", "iceburn", "tears", "fail", "goodjob", "headshot", "heart", "horse", "techies", "grave", "puppy", "cocky", "devil", "happy", "thinking", "tp", "salty", "angel", "blink", "bts3_bristle", "stunned", "disappear", "fire", "bounty", "troll", "gross", "ggdire", "ggradiant", "yolo", "throwgame", "aegis2015", "eyeroll", "dac15_tired", "dac15_blush", "dac15_face", "dac15_cool", "dac15_duel", "dac15_transform", "dac15_stab", "dac15_frog", "dac15_surprise", "bts3_bristle", "bts3_godz", "bts3_lina", "bts3_merlini", "bts3_rosh", "ti4copper", "ti4bronze", "ti4silver", "ti4gold", "ti4platinum", "ti4diamond" };
+        private static string[] emo = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
 
-
-        private static void Main()
+        static void Main(string[] args)
         {
-            Menu.AddItem(new MenuItem("table", "Show Table").SetValue(new KeyBind('K', KeyBindType.Toggle)));
+            Menu Position = new Menu("Position", "position");
+            Position.AddItem(new MenuItem("xposition", "X Position").SetValue(new Slider(450,1,(int)HUDInfo.ScreenSizeX())));
+            Position.AddItem(new MenuItem("yposition", "Y Position").SetValue(new Slider(110,1,(int)HUDInfo.ScreenSizeY())));
+            Menu.AddSubMenu(Position);
             Menu.AddToMainMenu();
-            for (int i = 0; i < 25; i++)
-            {
-                offskill1[i] = true;
-            }
-            Directory.CreateDirectory(MyPath);
-            Game.OnUpdate += Game_OnUpdate;
+            
             Game.OnWndProc += Game_OnWndProc;
             Drawing.OnDraw += Drawing_OnDraw;
         }
         private static void Game_OnWndProc(WndEventArgs args)
         {
-            if (args.WParam != 1 || Game.IsChatOpen)
+            if (args.WParam == 1)
             {
-                _leftMouseIsPress = false;
+                _leftMouseIsPress = true;
             }
             else
-                _leftMouseIsPress = true;
+                _leftMouseIsPress = false;
             if (args.Msg != WmKeyup && args.WParam == 1)
                 leftMouseIsHold = true;
             else leftMouseIsHold = false;
+
+            if (Game.IsChatOpen) active = true;
+            else active = false;
         }
-        [PermissionSetAttribute(SecurityAction.Assert, Unrestricted = true)]
-        private static void Game_OnUpdate(EventArgs args)
-        {
-            #region Init
-            me = ObjectManager.LocalHero;
-            if (!loaded)
-            {
-                if (!Game.IsInGame || me == null)
-                {
-                    return;
-                }
-                loaded = true;
 
-            }
-
-            if (!Game.IsInGame || me == null)
-            {
-                loaded = false;
-                skilltrue = false;
-                return;
-            }
-
-            if (Game.IsPaused)
-            {
-                return;
-            }
-
-            #endregion
-            if (!skilltrue)
-            {
-                spell[0] = me.Spellbook.SpellQ;
-                if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[1] = me.Spellbook.SpellD;
-                else spell[1] = me.Spellbook.SpellW;
-                if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Chen || ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Beastmaster) spell[2] = me.Spellbook.SpellD;
-                else if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[2] = me.Spellbook.SpellF;
-                else spell[2] = me.Spellbook.SpellE;
-                if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Ursa) spell[3] = me.Spellbook.Spells.FirstOrDefault(x => x.ClassID == ClassID.CDOTA_Ability_Ursa_Enrage);
-                else spell[3] = me.Spellbook.SpellR;
-                spell[4] = me.Spellbook.Spells.FirstOrDefault(x => x.AbilityType == AbilityType.Attribute);
-                count = (int)(me.Level - me.AbilityPoints);
-                if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Invoker)
-                {
-                    skillnum = 4;
-                    sequence[24] = 4;
-                }
-                else skillnum = 5;
-
-                try
-                {
-
-                    LoadThis("" + ObjectManager.LocalHero.ClassID);
-                    copy2darray();
-                    for (int i = 0; i < 20 + skillnum; i++)
-                    {
-                        sequence[i] = getskill(i);
-                    }
-                }
-                catch
-                {
-                    for (int i = 0; i < 20 + skillnum; i++)
-                    {
-                        sequence[i] = -1;
-                        for (int j = 0; j < skillnum; j++)
-                        {
-                            skill2d[j, i] = false;
-                            skill2dcasche[j, i] = false;
-                        }
-                    }
-                }
-                for (int i = 0; i < skillnum; i++) name[i] = NameManager.Name(spell[i]);
-                TextureDictionary.Add("itembg1", Drawing.GetTexture("materials/ensage_ui/menu/itembg1.vmat"));
-                skilltrue = true;
-            }
-            if (save)
-            {
-                save = false;
-                SaveThis("" + ObjectManager.LocalHero.ClassID);
-            }
-            if (delete)
-            {
-                delete = false;
-                File.Delete(MyPath + ObjectManager.LocalHero.ClassID + ".txt");
-                for (int i = 0; i < 20 + skillnum; i++)
-                {
-                    sequence[i] = -1;
-                    for (int j = 0; j < skillnum; j++)
-                    {
-                        skill2d[j, i] = false;
-                        skill2dcasche[j, i] = false;
-                    }
-                }
-            }
-            if (_leftMouseIsPress && Menu.Item("table").GetValue<KeyBind>().Active)
-            {
-                for (int i = 0; i < 20 + skillnum; i++)
-                {
-                    sequence[i] = getskill(i);
-                }
-            }
-            if (start)
-            {
-                if (startcache == false)
-                {
-                    startcache = true;
-                    for (int i = 0; i < count; i++) offskill1[i] = false;
-                }
-                if (Utils.SleepCheck("WaitPLSyoujerk"))
-                {
-                    if (abilitypoint > me.AbilityPoints)
-                    {
-                        abilitypoint = 0;
-                        count++;
-                        offskill1[count - 1] = false;
-                    }
-                    if (me.AbilityPoints > 0 && sequence[count] != -1)
-                    {
-                        abilitypoint = me.AbilityPoints;
-                        Player.UpgradeAbility(me, spell[sequence[count]]);
-                        Utils.Sleep(500, "WaitPLSyoujerk");
-                    }
-                }
-            }
-            else if (startcache == true)
-            {
-                startcache = false;
-                for (int i = 0; i < count; i++)
-                {
-                    offskill1[i] = true;
-                }
-            }
-        }
         private static void Drawing_OnDraw(EventArgs args)
         {
-            if (!Game.IsInGame || me == null || !loaded || Game.IsPaused) return;
-            if (_leftMouseIsPress && Menu.Item("table").GetValue<KeyBind>().Active)
+            if (!Game.IsInGame || !active) return;
+            startloc = new Vector2(Menu.Item("xposition").GetValue<Slider>().Value, Menu.Item("yposition").GetValue<Slider>().Value);
+            
+            if (min)
             {
-                for (int i = 0; i < 20 + skillnum; i++)
+                Drawing.DrawRect(startloc, new Vector2(300, 300), GetTexture("materials/ensage_ui/menu/itembg1.vmat"));
+                DrawToggleButton(startloc + new Vector2(0, 280), 300, 20, ref team);
+                for (int i = 0; i < 79; i++)
                 {
-                    for (int j = 0; j < skillnum; j++)
-                    {
-                        if (skill2d[j, i] != skill2dcasche[j, i])
-                        {
-                            updatearray(j, i);
-                            copy2darray();
-                        }
-                    }
+                    DrawEmoButton(startloc + new Vector2(15 + (i % 11) * 25, 25 + (i / 11) * 25), 20, 20, emo[i], name[i]);
                 }
-            }
-            if (Menu.Item("table").GetValue<KeyBind>().Active)
-            {
-                DotaTexture texture;
-                if (TextureDictionary.TryGetValue("itembg1", out texture))
-                    Drawing.DrawRect(startloc - new Vector2(25,12), new Vector2(725, 137), texture);
-                for (int i = 0; i < skillnum; i++)
-                {
+            } else Drawing.DrawRect(startloc, new Vector2(300, 20), GetTexture("materials/ensage_ui/menu/itembg1.vmat"));
+            DragButton(startloc, 280, 20);
+            DrawMinButton(startloc + new Vector2(280, 0), 20, 20, ref min);
+        }
+        public static DotaTexture GetTexture(string name)
+        {
+            if (_textureCache.ContainsKey(name)) return _textureCache[name];
 
-                    if (!TextureDictionary.TryGetValue(name[i], out texture))
-                    {
-                        texture = Drawing.GetTexture("materials/ensage_ui/spellicons/" + name[i] + ".vmat");
-                        TextureDictionary.Add(name[i], texture);
-                    }
-                    Drawing.DrawRect(startloc - new Vector2(25, -i * 25), new Vector2(25, 25), texture);
-                }
-
-                for (int i = 0; i < 20 + skillnum; i++)
-                {
-                    for (int j = 0; j < skillnum; j++)
-                    {
-                        DrawButton(startloc + new Vector2((i * 25), (j * 25)), 25, 25, ref skill2d[j, i], offskill1[i], new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "" + (i + 1));
-                    }
-                }
-                DrawButton(startloc + new Vector2(((20 + skillnum) * 25), ((skillnum-1) * 25)), 75, 25, ref save, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "SAVE");
-                DrawButton(startloc + new Vector2(((20 + skillnum) * 25), ((skillnum-2) * 25)), 75, 25, ref delete, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "DELETE");
-                DrawButton(startloc + new Vector2(((20 + skillnum) * 25), 0), 75, 25 * (skillnum-2), ref start, true, new Color(0, 255, 0, 25), new Color(0, 0, 0, 50), "START");
-                DragButton(startloc - new Vector2(25, 12), 725, 12);
-            }
+            return _textureCache[name] = Drawing.GetTexture(name);
         }
-        private static void updatearray(int j, int i)
+        private static void DrawEmoButton(Vector2 loc, float w, float h, string emoticon, string emo_name)
         {
-            for (int a = 0; a < 5; a++)
+            var isIn = Utils.IsUnderRectangle(Game.MouseScreenPosition, loc.X, loc.Y, w, h);
+            if (_leftMouseIsPress && Utils.SleepCheck("ClickButtonCd") && isIn && !hold)
             {
-                if (a == j) continue;
-                skill2d[a, i] = false;
+                Game.ExecuteCommand(((team) ? "say_team " : "say ") + emoticon);
+                Utils.Sleep(250, "ClickButtonCd");
             }
-        }
-        private static void copy2darray()
-        {
-            for (int i = 0; i < 25; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    skill2dcasche[j, i] = skill2d[j, i];
-                }
-            }
-        }
-        private static int getskill(int x)
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                if (skill2d[i, x] == true) return i;
-            }
-            return -1;
-        }
-        private static void LoadThis(string section)
-        {
-            string temp, first;
-            int equal;
-            FileStream fileStream = File.OpenRead(MyPath + section + ".txt");
-            TextReader textReader = new StreamReader(fileStream);
-            for (int i = 0; i < 20 + skillnum; i++)
-            {
-                for (int j = 0; j < skillnum; j++)
-                {
-                    //skill2d[j, i] = Convert.ToBoolean(SaveLoadSysHelper.IniReadValue(section, "" + j + ", " + i));
-                    temp = textReader.ReadLine();
-                    while (temp != null)
-                    {
-                        equal = temp.IndexOf('=');
-                        first = temp.Substring(0, equal);
-                        if (first.Equals("" + j + ", " + i))
-                        {
-                            skill2d[j, i] = Convert.ToBoolean(temp.Substring(equal + 1));
-                            break;
-                        }
-                        temp = textReader.ReadLine();
-                    }
-                }
-            }
-            textReader.Close();
-        }
-
-        private static void SaveThis(string section)
-        {
-
-            FileStream fileStream = File.OpenWrite(MyPath + section + ".txt");
-            TextWriter textWriter = new StreamWriter(fileStream);
-            for (int i = 0; i < 20 + skillnum; i++)
-                for (int j = 0; j < skillnum; j++)
-                {
-                    //SaveLoadSysHelper.IniWriteValue(section, "" + j + ", " + i, skill2d[j, i].ToString());
-                    textWriter.WriteLine("" + j + ", " + i + "=" + skill2d[j, i].ToString());
-                }
-
-            textWriter.Flush();
-            textWriter.Close();
-        }
-        private static void DrawButton(Vector2 a, float w, float h, ref bool clicked, bool isActive, Color @on, Color off, string drawOnButtonText = "")
-        {
-            var isIn = Utils.IsUnderRectangle(Game.MouseScreenPosition, a.X, a.Y, w, h);
-            if (isActive)
-            {
-                if (_leftMouseIsPress && Utils.SleepCheck("ClickButtonCd") && isIn && !hold)
-                {
-                    clicked = !clicked;
-                    Utils.Sleep(250, "ClickButtonCd");
-                }
-                var newColor = isIn
-                    ? new Color((int)(clicked ? @on.R : off.R), clicked ? @on.G : off.G, clicked ? @on.B : off.B, 150)
-                    : clicked ? @on : off;
-                Drawing.DrawRect(a, new Vector2(w, h), newColor);
-                Drawing.DrawRect(a, new Vector2(w, h), new Color(255, 255, 255, 10), true);
-                if (drawOnButtonText != "")
-                {
-                    Drawing.DrawText(drawOnButtonText, a + new Vector2(10, 2), Color.White,
-                        FontFlags.AntiAlias | FontFlags.DropShadow);
-                }
-            }
+            if(emo_name == "bounty")
+                Drawing.DrawRect(loc, new Vector2(w, h), GetTexture("materials/ensage_ui/minirunes/" + emo_name + ".vmat"));
             else
-            {
-                var newColor2 = clicked ? @on : Color.Gray;
-                Drawing.DrawRect(a, new Vector2(w, h), newColor2);
-                Drawing.DrawRect(a, new Vector2(w, h), new Color(0, 0, 0, 255), true);
-                if (drawOnButtonText != "")
-                {
-                    Drawing.DrawText(drawOnButtonText, a + new Vector2(10, 2), Color.White,
-                        FontFlags.AntiAlias | FontFlags.DropShadow);
-                }
-            }
+                Drawing.DrawRect(loc, new Vector2(w, h), GetTexture("materials/ensage_ui/emoticons/" + emo_name + ".vmat"));
+            var newColor = isIn ? (_leftMouseIsPress ? new Color(0, 0, 0, 150) : new Color(0, 0, 0, 70)) : new Color(0, 0, 0, 0);
+            Drawing.DrawRect(loc, new Vector2(w, h), newColor);
         }
         private static void DragButton(Vector2 loc, float w, float h)
         {
@@ -379,8 +96,39 @@ namespace AutoAbilityLevelUp
             if (hold)
             {
                 startloc = Game.MouseScreenPosition - diff;
+                Menu.Item("xposition").SetValue<Slider>(new Slider((int)startloc.X, 1, (int)HUDInfo.ScreenSizeX()));
+                Menu.Item("yposition").SetValue<Slider>(new Slider((int)startloc.Y, 1, (int)HUDInfo.ScreenSizeY()));
             }
-            Drawing.DrawRect(loc, new Vector2(w, h), new Color(0, 0, 0, 150));
+            Drawing.DrawRect(loc, new Vector2(w, h), new Color(0,0,0,150));
+            Drawing.DrawText("Emoticons For Free", loc + new Vector2(103, 2), Color.White,
+                    FontFlags.AntiAlias | FontFlags.DropShadow);
+        }
+
+        private static void DrawToggleButton(Vector2 loc, float w, float h, ref bool clicked)
+        {
+            var isIn = Utils.IsUnderRectangle(Game.MouseScreenPosition, loc.X, loc.Y, w, h);
+            if (_leftMouseIsPress && Utils.SleepCheck("ClickButtonCd") && isIn)
+            {
+                clicked = !clicked;
+                Utils.Sleep(250, "ClickButtonCd");
+            }
+            var newColor = isIn ? (_leftMouseIsPress ? new Color(0, 0, 0, 200) : new Color(0, 0, 0, 100) ): new Color(0, 0, 0, 150);
+            Drawing.DrawRect(loc, new Vector2(w, h), newColor);
+            Drawing.DrawText((clicked ? "To Team" : "To All"), loc + new Vector2(130, 2), Color.White,
+                    FontFlags.AntiAlias | FontFlags.DropShadow);
+        }
+        private static void DrawMinButton(Vector2 loc, float w, float h, ref bool clicked)
+        {
+            var isIn = Utils.IsUnderRectangle(Game.MouseScreenPosition, loc.X, loc.Y, w, h);
+            if (_leftMouseIsPress && Utils.SleepCheck("ClickButtonCd") && isIn)
+            {
+                clicked = !clicked;
+                Utils.Sleep(250, "ClickButtonCd");
+            }
+            var newColor = isIn ? (_leftMouseIsPress ? new Color(0, 0, 0, 200) : new Color(0, 0, 0, 100)) : new Color(0, 0, 0, 150);
+            Drawing.DrawRect(loc, new Vector2(w, h), newColor);
+            Drawing.DrawText("-", loc + new Vector2(6, 2), Color.White,
+                    FontFlags.AntiAlias | FontFlags.DropShadow);
         }
     }
 }
