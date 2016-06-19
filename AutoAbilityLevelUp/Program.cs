@@ -123,6 +123,7 @@ namespace AutoAbilityLevelUp
                 else if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Nevermore) spell[2] = me.Spellbook.SpellF;
                 else spell[2] = me.Spellbook.SpellE;
                 if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Ursa) spell[3] = me.Spellbook.Spells.FirstOrDefault(x => x.ClassID == ClassID.CDOTA_Ability_Ursa_Enrage);
+                else if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Ogre_Magi) spell[3] = me.Spellbook.Spells.FirstOrDefault(x => x.ClassID == ClassID.CDOTA_Ability_Ogre_Magi_Multicast);
                 else spell[3] = me.Spellbook.SpellR;
                 spell[4] = me.Spellbook.Spells.FirstOrDefault(x => x.AbilityType == AbilityType.Attribute);
                 count = (int)(me.Level - me.AbilityPoints);
