@@ -323,7 +323,8 @@ namespace InvokerSkill
         }
         static void Drawing_OnEndScene(EventArgs args)
         {
-            if (Drawing.Direct3DDevice9 == null || Drawing.Direct3DDevice9.IsDisposed || !Game.IsInGame || !Menu.Item("enable").GetValue<bool>())
+            if (Drawing.Direct3DDevice9 == null || Drawing.Direct3DDevice9.IsDisposed || !Game.IsInGame || !Menu.Item("enable").GetValue<bool>()
+            || ObjectManager.LocalHero.ClassID != ClassID.CDOTA_Unit_Hero_Invoker)
                 return;
             DrawShadowText(Convert.ToChar(Menu.Item("firstkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + 3, (int)startposy + 1, Color.LightCyan, FontArray);
             DrawShadowText(Convert.ToChar(Menu.Item("secondkey").GetValue<KeyBind>().Key).ToString(), (int)startposx + (int)(size + 3), (int)startposy + 1, Color.LightCyan, FontArray);
