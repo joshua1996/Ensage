@@ -363,7 +363,7 @@ namespace InvokerSkill
                 {
                     var invoke = me.FindSpell("invoker_invoke");
                     var spells = s.GetNeededAbilities();
-                    if (invoke.CanBeCasted())
+                    if (invoke.CanBeCasted() && me.CanCast())
                     {
                         if (spells[0] != null) spells[0].UseAbility();
                         if (spells[1] != null) spells[1].UseAbility();
