@@ -69,6 +69,7 @@ namespace AutoAbilityLevelUp
             {
                 offskill1[i] = true;
             }
+            TextureDictionary.Add("itembg1", Drawing.GetTexture("materials/ensage_ui/menu/itembg1.vmat"));
             Directory.CreateDirectory(MyPath);
             Game.OnUpdate += Game_OnUpdate;
             Game.OnWndProc += Game_OnWndProc;
@@ -155,9 +156,8 @@ namespace AutoAbilityLevelUp
                             skill2dcasche[j, i] = false;
                         }
                     }
-                }
-                for (int i = 0; i < skillnum; i++) name[i] = NameManager.Name(spell[i]);
-                TextureDictionary.Add("itembg1", Drawing.GetTexture("materials/ensage_ui/menu/itembg1.vmat"));
+                 }
+            for (int i = 0; i < skillnum; i++) name[i] = NameManager.Name(spell[i]);
                 skilltrue = true;
             }
             if (save)
