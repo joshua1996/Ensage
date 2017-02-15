@@ -14,8 +14,8 @@ namespace Emoticons_For_Free
         public static Dictionary<string, DotaTexture> _textureCache = new Dictionary<string, DotaTexture>();
         private static Vector2 startloc, diff;
         private static bool _leftMouseIsPress, leftMouseIsHold, team = true, hold = false, active = false, min = true; 
-        private static string[] name = { "blush", "cheeky", "cool", "crazy", "cry", "disapprove", "doubledamage", "facepalm", "happytears", "haste", "hex", "highfive", "huh", "hush", "illusion", "invisibility", "laugh", "rage", "regeneration", "sad", "sick", "sleeping", "smile", "surprise", "wink", "aaaah", "burn", "hide", "iceburn", "tears", "fail", "goodjob", "headshot", "heart", "horse", "techies", "grave", "puppy", "cocky", "devil", "happy", "thinking", "tp", "salty", "angel", "blink", "bts3_bristle", "stunned", "disappear", "fire", "bounty", "troll", "gross", "ggdire", "ggradiant", "yolo", "throwgame", "aegis2015", "eyeroll", "dac15_tired", "dac15_blush", "dac15_face", "dac15_cool", "dac15_duel", "dac15_transform", "dac15_stab", "dac15_frog", "dac15_surprise", "bts3_bristle", "bts3_godz", "bts3_lina", "bts3_merlini", "bts3_rosh", "ti4copper", "ti4bronze", "ti4silver", "ti4gold", "ti4platinum", "ti4diamond" };
-        private static string[] emo = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
+        private static string[] name = { "poop","blush", "cheeky", "cool", "crazy", "cry", "disapprove", "doubledamage", "facepalm", "happytears", "haste", "hex", "highfive", "huh", "hush", "illusion", "invisibility", "laugh", "rage", "regeneration", "sad", "sick", "sleeping", "smile", "surprise", "wink", "aaaah", "burn", "hide", "iceburn", "tears", "fail", "goodjob", "headshot", "heart", "horse", "techies", "grave", "puppy", "cocky", "devil", "happy", "thinking", "tp", "salty", "angel", "blink", "bts3_bristle", "stunned", "disappear", "fire", "bounty", "troll", "gross", "ggdire", "ggradiant", "yolo", "throwgame", "aegis2015", "eyeroll", "dac15_tired", "dac15_blush", "dac15_face", "dac15_cool", "dac15_duel", "dac15_transform", "dac15_stab", "dac15_frog", "dac15_surprise", "bts3_bristle", "bts3_godz", "bts3_lina", "bts3_merlini", "bts3_rosh", "ti4copper", "ti4bronze", "ti4silver", "ti4gold", "ti4platinum", "ti4diamond" };
+        private static string[] emo = { "","", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
 
         static void Main(string[] args)
         {
@@ -53,7 +53,7 @@ namespace Emoticons_For_Free
             {
                 Drawing.DrawRect(startloc, new Vector2(300, 300), GetTexture("materials/ensage_ui/menu/itembg1.vmat"));
                 DrawToggleButton(startloc + new Vector2(0, 280), 300, 20, ref team);
-                for (int i = 0; i < 79; i++)
+                for (int i = 0; i < 80; i++)
                 {
                     DrawEmoButton(startloc + new Vector2(15 + (i % 11) * 25, 25 + (i / 11) * 25), 20, 20, emo[i], name[i]);
                 }
