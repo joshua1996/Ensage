@@ -100,7 +100,7 @@ namespace Emoticons_For_Free
                 Menu.Item("yposition").SetValue<Slider>(new Slider((int)startloc.Y, 1, (int)HUDInfo.ScreenSizeY()));
             }
             Drawing.DrawRect(loc, new Vector2(w, h), new Color(0,0,0,150));
-            Drawing.DrawText("Emoticons For Free", loc + new Vector2(103, 2), Color.White,
+            Drawing.DrawText("Emoticons For Free by joshua", loc + new Vector2(103, 2), Color.White,
                     FontFlags.AntiAlias | FontFlags.DropShadow);
         }
 
